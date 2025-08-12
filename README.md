@@ -20,8 +20,6 @@ Add the plugin to your Babel configuration:
 
 ```javascript
 // babel.config.js
-const reactSourceCodePlugin = require('babel-plugin-react-source-string');
-
 module.exports = {
   plugins: [
     [
