@@ -59,8 +59,6 @@ function MyComponent() {
   <button data-source="src/MyComponent.jsx:7">Click me</button>
   <span data-source="src/MyComponent.jsx:8">Some text</span>
 </div>
-  );
-}
 ```
 
 ## License
