@@ -25,7 +25,7 @@ const reactSourceCodePlugin = require('babel-plugin-react-source-string');
 module.exports = {
   plugins: [
     [
-      reactSourceCodePlugin(['@mui/material'], ['MyComponent', 'p', 'span']),
+      'babel-plugin-react-source-string', ['MyComponent', 'p', 'span']),
     ],
   ],
 };
