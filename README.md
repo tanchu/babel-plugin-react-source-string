@@ -1,6 +1,6 @@
 # babel-plugin-react-source-string
 
-A Babel plugin that adds `data-source` attributes to HTML elements with React components, showing the source line of code.
+A Babel plugin that adds `data-source` attributes to HTML elements, showing the source line of code from react component.
 
 ## Installation
 
@@ -20,14 +20,12 @@ Add the plugin to your Babel configuration:
 
 ```javascript
 // babel.config.js
+const reactSourceCodePlugin = require('babel-plugin-react-source-string');
+
 module.exports = {
   plugins: [
     [
-      "babel-plugin-react-source-string",
-      {
-        libraries: ["react", "@mui/material", "antd"], // UI libraries to track
-        excluded: ["div", "span", "p"], // HTML elements to exclude
-      },
+      reactSourceCodePlugin(['@mui/material'], ['MyComponent', 'p', 'span']),
     ],
   ],
 };
@@ -58,45 +56,14 @@ function MyComponent() {
 
 **Output:**
 
-```jsx
-import React from "react";
-import { Button } from "@mui/material";
-
-function MyComponent() {
-  return (
-    <div>
-      <Button data-source="src/MyComponent.jsx:6">Click me</Button>
-      <span>Some text</span>
-    </div>
+```html
+<div data-source="src/MyComponent.jsx:6">
+  <button>Click me</button>
+  <span data-source="src/MyComponent.jsx:8">Some text</span>
+</div>
   );
 }
 ```
-
-## Development
-
-### Build
-
-```bash
-pnpm run build
-```
-
-### Development Mode
-
-```bash
-pnpm run dev
-```
-
-## Publishing
-
-This package uses GitHub Actions for automatic publishing. To publish a new version:
-
-1. Update the version in `package.json`
-2. Create and push a new tag:
-   ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
-3. The GitHub Action will automatically build and publish to npm
 
 ## License
 
