@@ -25,7 +25,7 @@ const reactSourceCodePlugin = require('babel-plugin-react-source-string');
 module.exports = {
   plugins: [
     [
-      'babel-plugin-react-source-string', ['MyComponent', 'p', 'span']),
+      'babel-plugin-react-source-string', {libraries: ['@mui/material'], excluded:['MyComponent', 'p', 'span']},
     ],
   ],
 };
@@ -58,7 +58,7 @@ function MyComponent() {
 
 ```html
 <div data-source="src/MyComponent.jsx:6">
-  <button>Click me</button>
+  <button data-source="src/MyComponent.jsx:7">Click me</button>
   <span data-source="src/MyComponent.jsx:8">Some text</span>
 </div>
   );
