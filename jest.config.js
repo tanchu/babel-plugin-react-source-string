@@ -4,6 +4,7 @@ module.exports = {
   collectCoverageFrom: [
     'src/**/*.ts',
   ],
+  preset: 'ts-jest',
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   transform: {
@@ -11,5 +12,5 @@ module.exports = {
   },
   transformIgnorePatterns: [
     'node_modules/(?!(@babel)/)',
-  ],
+  ]
 };

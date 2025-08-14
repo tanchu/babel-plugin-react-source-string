@@ -1,0 +1,12 @@
+{
+  "packages": {
+    ".": {
+      "releaseType": "node",
+      "packageName": "babel-plugin-react-source-string"
+    }
+  },
+  "bumpMinorPreMajor": true,
+  "bumpPatchForMinorPreMajor": true,
+  "includeComponentInTag": false,
+  "releaseLabels": ["release", "autorelease: pending"]
+}

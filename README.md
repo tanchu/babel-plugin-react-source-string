@@ -23,7 +23,8 @@ Add the plugin to your Babel configuration:
 module.exports = {
   plugins: [
     [
-      'babel-plugin-react-source-string', {libraries: ['@mui/material'], excluded:['MyComponent', 'p', 'span']},
+      "babel-plugin-react-source-string",
+      { libraries: ["@mui/material"], excluded: ["MyComponent", "p", "span"] },
     ],
   ],
 };
@@ -36,7 +37,7 @@ module.exports = {
 
 ### Example
 
-**Input:**
+**Source (JSX):**
 
 ```jsx
 import React from "react";
@@ -52,13 +53,29 @@ function MyComponent() {
 }
 ```
 
-**Output:**
+**Rendered (HTML):**
 
 ```html
 <div data-source="src/MyComponent.jsx:6">
   <button data-source="src/MyComponent.jsx:7">Click me</button>
   <span data-source="src/MyComponent.jsx:8">Some text</span>
 </div>
+```
+
+## Contributing
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) for commit messages. The following commit types will trigger automatic releases:
+
+- `feat:` - New features (minor version bump)
+- `fix:` - Bug fixes (patch version bump)
+- `BREAKING CHANGE:` - Breaking changes (major version bump)
+
+Examples:
+
+```bash
+git commit -m "feat: add support for new library"
+git commit -m "fix: resolve issue with data-source attribute"
+git commit -m "feat!: change plugin configuration format"
 ```
 
 ## License
