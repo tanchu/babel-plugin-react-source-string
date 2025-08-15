@@ -19,7 +19,7 @@ jobs:
         with:
           release-type: node
           include-component-in-tag: false
-          token: ${{ secrets.NPM_TOKEN }}
+          token: ${{ secrets.CI_GITHUB_TOKEN }}
 
   publish:
     if: github.event_name == 'release'
