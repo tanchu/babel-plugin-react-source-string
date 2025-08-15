@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-react-source-string",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "adds data-source attribute to html elements with react components source line of code",
   "author": "Jaroslav Barov jaroslav.barov@gmail.com",
   "license": "MIT",
