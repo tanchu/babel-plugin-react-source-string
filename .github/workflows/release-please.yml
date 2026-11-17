@@ -21,7 +21,13 @@ jobs:
           include-component-in-tag: false
           token: ${{ secrets.CI_GITHUB_TOKEN }}
 
+  # Перед публикацией в npm — те же проверки, что на PR.
+  checks:
+    if: github.event_name == 'release'
+    uses: ./.github/workflows/ci.yml
+
   publish:
+    needs: checks
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
     steps:
