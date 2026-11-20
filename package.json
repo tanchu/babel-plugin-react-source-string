@@ -27,24 +27,19 @@
   "scripts": {
     "dev": "unbuild --stub",
     "build": "unbuild",
-    "test:ci": "jest",
-    "test": "npm run build; jest"
+    "test:ci": "node --test \"tests/**/*.test.mjs\"",
+    "test": "unbuild && node --test \"tests/**/*.test.mjs\""
   },
   "repository": "git@github.com:tanchu/babel-plugin-react-source-string.git",
-  "dependencies": {
-    "@babel/core": "^7.28.3",
-    "@babel/types": "^7.28.2"
-  },
   "devDependencies": {
-    "@babel/preset-env": "^7.28.3",
+    "@babel/core": "^7.28.3",
     "@babel/preset-react": "^7.27.1",
-    "@babel/traverse": "^7.28.3",
+    "@babel/types": "^7.28.2",
     "@types/babel__core": "^7.20.5",
-    "@types/jest": "^29.5.14",
     "@types/node": "^24.2.1",
-    "babel-jest": "^29.7.0",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.4.1",
     "unbuild": "^1.2.1"
+  },
+  "peerDependencies": {
+    "@babel/core": "^7.0.0 || ^8.0.0"
   }
 }

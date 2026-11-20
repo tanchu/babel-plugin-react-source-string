@@ -1,8 +1,11 @@
 import type * as BabelCoreNamespace from '@babel/core';
-import type { PluginObj } from '@babel/core';
+import type { ConfigAPI, PluginObj } from '@babel/core';
 import type { JSXOpeningElement } from '@babel/types';
 
-type Babel = typeof BabelCoreNamespace;
+type BabelAPI = typeof BabelCoreNamespace & ConfigAPI;
+
+/** Babel versions this release supports; keep in sync with `peerDependencies` in package.json. */
+export const SUPPORTED_BABEL = '^7.0.0 || ^8.0.0';
 
 export interface ReactSourceStringOptions {
     /** Component/element names to skip (case-insensitive). For `<Foo.Bar>` the name is `Bar`. */
@@ -45,32 +48,37 @@ function elementName(name: JSXOpeningElement['name']): string {
     }
 }
 
-const reactSourceString = ({ types }: Babel): PluginObj<PluginOptions> => ({
-    name: 'babel-plugin-react-source-string',
-    visitor: {
-        JSXOpeningElement(path, state) {
-            if (!state.filename) return;
+const reactSourceString = (api: BabelAPI): PluginObj<PluginOptions> => {
+    api.assertVersion(SUPPORTED_BABEL);
+    const { types } = api;
 
-            const excluded = Array.isArray(state.opts?.excluded) ? state.opts.excluded : [];
-            const name = elementName(path.node.name);
-            if (excluded.some((item) => item.toLowerCase() === name.toLowerCase())) return;
+    return {
+        name: 'babel-plugin-react-source-string',
+        visitor: {
+            JSXOpeningElement(path, state) {
+                if (!state.filename) return;
 
-            const hasDataSource = path.node.attributes.some(
-                (attr) => attr.type === 'JSXAttribute' && attr.name.type === 'JSXIdentifier' && attr.name.name === ATTR
-            );
-            if (hasDataSource) return;
+                const excluded = Array.isArray(state.opts?.excluded) ? state.opts.excluded : [];
+                const name = elementName(path.node.name);
+                if (excluded.some((item) => item.toLowerCase() === name.toLowerCase())) return;
 
-            const root = state.opts?.root ?? state.cwd;
-            const display = stripVirtualPrefix(state.filename.replace(/\\/g, '/'));
-            const file = root ? relativePath(root, display) : display;
-            const line = path.node.loc?.start.line;
-            if (line === undefined) return;
+                const hasDataSource = path.node.attributes.some(
+                    (attr) => attr.type === 'JSXAttribute' && attr.name.type === 'JSXIdentifier' && attr.name.name === ATTR
+                );
+                if (hasDataSource) return;
 
-            path.node.attributes.push(
-                types.jsxAttribute(types.jsxIdentifier(ATTR), types.stringLiteral(`${file}:${line}`))
-            );
+                const root = state.opts?.root ?? state.cwd;
+                const display = stripVirtualPrefix(state.filename.replace(/\\/g, '/'));
+                const file = root ? relativePath(root, display) : display;
+                const line = path.node.loc?.start.line;
+                if (line === undefined) return;
+
+                path.node.attributes.push(
+                    types.jsxAttribute(types.jsxIdentifier(ATTR), types.stringLiteral(`${file}:${line}`))
+                );
+            },
         },
-    },
-});
+    };
+};
 
 export default reactSourceString;

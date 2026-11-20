@@ -37,6 +37,19 @@ module.exports = (api) => ({
 });
 ```
 
+## Compatibility
+
+| Plugin | Babel (`@babel/core`) | Node.js |
+| ------ | --------------------- | ------- |
+| 2.x    | 7.x, 8.x              | as required by your Babel version |
+| 1.x    | 7.x                   | as required by Babel 7 |
+
+The supported range is declared in `peerDependencies`, so npm and pnpm warn on install when your Babel
+version is outside it, and the plugin calls Babel's `api.assertVersion()`, so an unsupported Babel fails
+with a clear error instead of producing wrong output. CI runs the tests against Babel 7, Babel 8 and the
+newest `@babel/core` on every pull request and every Monday; a new Babel major is added to the table and
+to `peerDependencies` once the tests pass on it.
+
 ## Plugin options
 
 | Option     | Type       | Default        | Description                                                                 |
