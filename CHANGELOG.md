@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/tanchu/babel-plugin-react-source-string/compare/v1.1.4...v2.0.0) (2026-11-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `libraries` option is removed and components are tagged regardless of where they are imported from. Use `excluded` to skip elements.
+
+### Features
+
+* same options and output as the SWC and Vite plugins ([f7864a6](https://github.com/tanchu/babel-plugin-react-source-string/commit/f7864a65d93cbeedeab77d15e012f675091b1149))
+
 ## [1.1.4](https://github.com/tanchu/babel-plugin-react-source-string/compare/v1.1.3...v1.1.4) (2025-08-15)
 
 
