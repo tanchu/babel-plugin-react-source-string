@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.0](https://github.com/tanchu/babel-plugin-react-source-string/compare/v2.0.1...v2.1.0) (2026-11-20)
+
+
+### Features
+
+* optional libraries option, same as in the SWC and Vite plugins ([d829997](https://github.com/tanchu/babel-plugin-react-source-string/commit/d829997202ae1d366b78918b801abcad03da8ed8))
+* optional libraries option, same as in the SWC and Vite plugins ([c93004c](https://github.com/tanchu/babel-plugin-react-source-string/commit/c93004c810fbe8ff31fdc2e96923321543f054c7))
+
 ## [2.0.1](https://github.com/tanchu/babel-plugin-react-source-string/compare/v2.0.0...v2.0.1) (2026-11-20)
 
 
