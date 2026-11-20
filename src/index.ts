@@ -67,6 +67,12 @@ function isHtmlElement(name: JSXOpeningElement['name']): boolean {
     return first === first.toLowerCase() && first !== first.toUpperCase();
 }
 
+/** `<Fragment>` and `<React.Fragment>` accept only `key` and `children`; React warns about any other prop. */
+function isFragment(name: JSXOpeningElement['name']): boolean {
+    if (name.type === 'JSXIdentifier') return name.name === 'Fragment';
+    return name.type === 'JSXMemberExpression' && name.property.name === 'Fragment';
+}
+
 function elementName(name: JSXOpeningElement['name']): string {
     switch (name.type) {
         case 'JSXIdentifier':
@@ -99,6 +105,7 @@ const plugin = (api: BabelAPI): PluginObj<PluginOptions> => {
             },
             JSXOpeningElement(path, state) {
                 if (!state.filename) return;
+                if (isFragment(path.node.name)) return;
 
                 const imports = state.libraryImports;
                 if (imports && !isHtmlElement(path.node.name) && !imports.has(rootName(path.node.name))) return;

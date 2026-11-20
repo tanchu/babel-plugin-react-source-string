@@ -19,7 +19,7 @@ pnpm add -D babel-plugin-react-source-string
 // babel.config.js
 module.exports = {
   plugins: [
-    ["babel-plugin-react-source-string", { excluded: ["Fragment", "Slot"] }],
+    ["babel-plugin-react-source-string", { excluded: ["Slot"] }],
   ],
 };
 ```
@@ -31,7 +31,7 @@ module.exports = {
 module.exports = (api) => ({
   plugins: [
     ...(api.env("development")
-      ? [["babel-plugin-react-source-string", { excluded: ["Fragment"] }]]
+      ? [["babel-plugin-react-source-string", { excluded: ["Slot"] }]]
       : []),
   ],
 });
@@ -64,7 +64,7 @@ to `peerDependencies` once the tests pass on it.
 The plugin adds a `data-source` attribute to **every** JSX opening element — both HTML tags (`<div>`, `<span>`)
 and React components (`<Dialog>`, `<Pencil>`, `<Link>`). Elements listed in `excluded` are skipped;
 with `libraries` set, only components imported from those packages are tagged; elements that already have
-a `data-source` attribute are left untouched. Fragments (`<>`) are never tagged.
+a `data-source` attribute are left untouched. Fragments are never tagged: `<>`, `<Fragment>` and `<React.Fragment>` accept only `key` and `children`, and React warns about any other prop.
 
 The attribute value is `relative/path/to/file.jsx:line`, where `line` is the line of the element's opening `<`,
 making it easy to locate any DOM node back to its source from DevTools. Components show the attribute in the DOM
