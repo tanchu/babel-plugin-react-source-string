@@ -12,10 +12,16 @@ export interface ReactSourceStringOptions {
     excluded?: string[];
     /** Project root for relative paths. Defaults to Babel's `cwd`; an empty string keeps paths absolute. */
     root?: string;
+    /**
+     * Packages whose components get tagged (a subpath like `@mui/material/Button` matches `@mui/material`).
+     * HTML elements are always tagged. Not set or empty: every component is tagged.
+     */
+    libraries?: string[];
 }
 
 interface PluginOptions extends BabelCoreNamespace.PluginPass {
     opts: ReactSourceStringOptions;
+    libraryImports?: Set<string>;
 }
 
 const ATTR = 'data-source';
@@ -34,6 +40,26 @@ export function relativePath(cwd: string, filename: string): string {
     const base = cwd.replace(/\\/g, '/').replace(/\/+$/, '');
     const file = filename.replace(/\\/g, '/');
     return file.startsWith(base) ? file.slice(base.length).replace(/^\/+/, '') : file;
+}
+
+/** Same rule as the SWC and Vite plugins: the package itself or any of its subpaths. */
+export function fromLibrary(source: string, libraries: string[]): boolean {
+    return libraries.some((lib) => source === lib || source.startsWith(`${lib}/`));
+}
+
+/** The identifier that decides whether the element is a component: `UI` for `<UI.Button>`. */
+function rootName(name: JSXOpeningElement['name']): string {
+    let node = name;
+    while (node.type === 'JSXMemberExpression') node = node.object as JSXOpeningElement['name'];
+    if (node.type === 'JSXNamespacedName') return node.namespace.name;
+    return node.type === 'JSXIdentifier' ? node.name : 'this';
+}
+
+function isHtmlElement(name: JSXOpeningElement['name']): boolean {
+    if (name.type === 'JSXNamespacedName') return true;
+    if (name.type !== 'JSXIdentifier') return false;
+    const first = name.name[0];
+    return first === first.toLowerCase() && first !== first.toUpperCase();
 }
 
 function elementName(name: JSXOpeningElement['name']): string {
@@ -55,8 +81,22 @@ const plugin = (api: BabelAPI): PluginObj<PluginOptions> => {
     return {
         name: 'babel-plugin-react-source-string',
         visitor: {
+            Program(path, state) {
+                const libraries = Array.isArray(state.opts?.libraries) ? state.opts.libraries : [];
+                if (libraries.length === 0) return;
+
+                const imports = new Set<string>();
+                for (const statement of path.node.body) {
+                    if (statement.type !== 'ImportDeclaration' || !fromLibrary(statement.source.value, libraries)) continue;
+                    for (const specifier of statement.specifiers) imports.add(specifier.local.name);
+                }
+                state.libraryImports = imports;
+            },
             JSXOpeningElement(path, state) {
                 if (!state.filename) return;
+
+                const imports = state.libraryImports;
+                if (imports && !isHtmlElement(path.node.name) && !imports.has(rootName(path.node.name))) return;
 
                 const excluded = Array.isArray(state.opts?.excluded) ? state.opts.excluded : [];
                 const name = elementName(path.node.name);

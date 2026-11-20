@@ -56,12 +56,14 @@ to `peerDependencies` once the tests pass on it.
 | ---------- | ---------- | -------------- | --------------------------------------------------------------------------- |
 | `excluded` | `string[]` | `[]`           | Component/element names to skip (case-insensitive). For `<UI.Button>` the name is `Button`. |
 | `root`     | `string`   | Babel's `cwd`  | Project root for relative paths. An empty string keeps paths absolute.      |
+| `libraries` | `string[]` | — (tag all)   | Tag only components imported from these packages or their subpaths (`@mui/material/Button` matches `@mui/material`); HTML elements are always tagged. |
 
 ## How it works
 
 The plugin adds a `data-source` attribute to **every** JSX opening element — both HTML tags (`<div>`, `<span>`)
-and React components (`<Dialog>`, `<Pencil>`, `<Link>`). Elements listed in `excluded` are skipped,
-and elements that already have a `data-source` attribute are left untouched. Fragments (`<>`) are never tagged.
+and React components (`<Dialog>`, `<Pencil>`, `<Link>`). Elements listed in `excluded` are skipped;
+with `libraries` set, only components imported from those packages are tagged; elements that already have
+a `data-source` attribute are left untouched. Fragments (`<>`) are never tagged.
 
 The attribute value is `relative/path/to/file.jsx:line`, where `line` is the line of the element's opening `<`,
 making it easy to locate any DOM node back to its source from DevTools. Components show the attribute in the DOM
@@ -92,8 +94,9 @@ when they pass extra props down to an element.
 
 ## Migrating from 1.x
 
-- Every JSX element is tagged now, not only HTML tags and components imported from `libraries`.
-- The `libraries` option is removed. To skip specific elements, list them in `excluded`.
+- Without `libraries`, every JSX element is tagged now, not only HTML tags.
+- With `libraries`, the 1.x behavior stays: HTML tags plus components imported from those packages.
+  Subpath imports (`@mui/material/Button`) and namespace imports (`<UI.Button>` with `import * as UI`) count too.
 - New `root` option; paths stay relative to Babel's `cwd` by default, as before.
 
 ## Contributing
