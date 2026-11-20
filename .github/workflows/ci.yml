@@ -3,24 +3,32 @@ name: CI
 on:
   pull_request:
     branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
 
 jobs:
-  build:
+  test:
+    name: Babel ${{ matrix.babel }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        babel: ["7", "8", "latest"]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 10
+          node-version: "24"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -28,10 +36,9 @@ jobs:
       - name: Build package
         run: pnpm run build
 
-      - name: Check build output
-        run: |
-          ls -la dist/
-          echo "Build completed successfully!"
-      
+      - name: Use Babel ${{ matrix.babel }}
+        if: matrix.babel != '7'
+        run: pnpm add -D @babel/core@${{ matrix.babel }} @babel/preset-react@${{ matrix.babel }} @babel/types@${{ matrix.babel }}
+
       - name: Run tests
-        run: npm run test:ci
+        run: pnpm run test:ci
