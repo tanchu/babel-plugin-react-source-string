@@ -14,7 +14,7 @@ export interface ReactSourceStringOptions {
     root?: string;
 }
 
-export interface PluginOptions extends BabelCoreNamespace.PluginPass {
+interface PluginOptions extends BabelCoreNamespace.PluginPass {
     opts: ReactSourceStringOptions;
 }
 
@@ -48,7 +48,7 @@ function elementName(name: JSXOpeningElement['name']): string {
     }
 }
 
-const reactSourceString = (api: BabelAPI): PluginObj<PluginOptions> => {
+const plugin = (api: BabelAPI): PluginObj<PluginOptions> => {
     api.assertVersion(SUPPORTED_BABEL);
     const { types } = api;
 
@@ -80,5 +80,11 @@ const reactSourceString = (api: BabelAPI): PluginObj<PluginOptions> => {
         },
     };
 };
+
+/** Public signature without Babel's own types: they differ between Babel 7 and 8. */
+const reactSourceString = plugin as unknown as (
+    api: object,
+    options?: ReactSourceStringOptions
+) => { name: string; visitor: object };
 
 export default reactSourceString;

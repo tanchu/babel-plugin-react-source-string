@@ -33,12 +33,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build package
+        run: pnpm run build
+
       - name: Use Babel ${{ matrix.babel }}
         if: matrix.babel != '7'
         run: pnpm add -D @babel/core@${{ matrix.babel }} @babel/preset-react@${{ matrix.babel }} @babel/types@${{ matrix.babel }}
-
-      - name: Build package
-        run: pnpm run build
 
       - name: Run tests
         run: pnpm run test:ci
