@@ -1,72 +1,74 @@
-import { relative } from 'path';
-import { PluginObj } from '@babel/core';
 import type * as BabelCoreNamespace from '@babel/core';
+import type { PluginObj } from '@babel/core';
+import type { JSXOpeningElement } from '@babel/types';
 
 type Babel = typeof BabelCoreNamespace;
 
+export interface ReactSourceStringOptions {
+    /** Component/element names to skip (case-insensitive). For `<Foo.Bar>` the name is `Bar`. */
+    excluded?: string[];
+    /** Project root for relative paths. Defaults to Babel's `cwd`; an empty string keeps paths absolute. */
+    root?: string;
+}
+
 export interface PluginOptions extends BabelCoreNamespace.PluginPass {
-    opts: {
-        libraries?: string[];
-        excluded?: string[];
-    };
+    opts: ReactSourceStringOptions;
+}
+
+const ATTR = 'data-source';
+
+/** Turbopack-style ids look like `[project]/src/a.tsx`. Same as the SWC and Vite plugins. */
+export function stripVirtualPrefix(filename: string): string {
+    if (filename.startsWith('[')) {
+        const pos = filename.indexOf(']/');
+        if (pos !== -1) return filename.slice(pos + 2);
+    }
+    return filename;
+}
+
+/** Same semantics as the SWC and Vite plugins: a file outside `cwd` keeps its absolute path. */
+export function relativePath(cwd: string, filename: string): string {
+    const base = cwd.replace(/\\/g, '/').replace(/\/+$/, '');
+    const file = filename.replace(/\\/g, '/');
+    return file.startsWith(base) ? file.slice(base.length).replace(/^\/+/, '') : file;
+}
+
+function elementName(name: JSXOpeningElement['name']): string {
+    switch (name.type) {
+        case 'JSXIdentifier':
+            return name.name;
+        case 'JSXMemberExpression':
+            return name.property.name;
+        case 'JSXNamespacedName':
+        default:
+            return name.name.name;
+    }
 }
 
 const reactSourceString = ({ types }: Babel): PluginObj<PluginOptions> => ({
     name: 'babel-plugin-react-source-string',
     visitor: {
-        Program(path, state) {
-            const validLibraries = Array.isArray(state.opts?.libraries) ? state.opts?.libraries : [];
-            const validExcluded = Array.isArray(state.opts?.excluded) ? state.opts?.excluded : [];
+        JSXOpeningElement(path, state) {
+            if (!state.filename) return;
 
-            const excludeList = new Set(validExcluded.map((i: string) => i.toLowerCase()));
-            const librarySet = new Set(validLibraries);
-            const UIImports = new Set();
-            path.traverse({
-                ImportDeclaration(importPath) {
-                    const sourceValue = importPath.node.source.value;
-                    if (librarySet.has(sourceValue) || librarySet.has(sourceValue.split('/')[0])) {
-                        importPath.node.specifiers.forEach((specifier) => {
-                            if (!validExcluded.includes(specifier.local.name)) {
-                                UIImports.add(specifier.local.name);
-                            }
-                        });
-                    }
-                },
-            });
+            const excluded = Array.isArray(state.opts?.excluded) ? state.opts.excluded : [];
+            const name = elementName(path.node.name);
+            if (excluded.some((item) => item.toLowerCase() === name.toLowerCase())) return;
 
-            path.traverse({
-                JSXOpeningElement(jsxPath) {
-                    const identifier = jsxPath.node.name;
+            const hasDataSource = path.node.attributes.some(
+                (attr) => attr.type === 'JSXAttribute' && attr.name.type === 'JSXIdentifier' && attr.name.name === ATTR
+            );
+            if (hasDataSource) return;
 
-                    if (!identifier || (identifier.type !== 'JSXIdentifier' && identifier.type !== 'JSXNamespacedName')) {
-                        return;
-                    }
+            const root = state.opts?.root ?? state.cwd;
+            const display = stripVirtualPrefix(state.filename.replace(/\\/g, '/'));
+            const file = root ? relativePath(root, display) : display;
+            const line = path.node.loc?.start.line;
+            if (line === undefined) return;
 
-                    const elementName = typeof identifier.name === 'string' ? identifier.name : identifier.name.name;
-
-                    if (excludeList.has(elementName.toLowerCase())) {
-                        return;
-                    }
-
-                    const isLowercase = elementName === elementName.toLowerCase();
-                    const isUIImport = UIImports.has(elementName);
-
-                    if (state.filename && (isLowercase || isUIImport)) {
-                        const source = `${relative(state.cwd, state.filename)}:${jsxPath.node.loc?.start.line}`;
-                        const name = types.jsxIdentifier('data-source');
-                        const value = types.stringLiteral(source);
-                        const attribute = types.jsxAttribute(name, value);
-
-                        const hasDataSource = jsxPath.node.attributes.some(
-                            (attr) => attr.type === 'JSXAttribute' && attr.name && attr.name.name === 'data-source'
-                        );
-
-                        if (!hasDataSource) {
-                            jsxPath.node.attributes.push(attribute);
-                        }
-                    }
-                },
-            });
+            path.node.attributes.push(
+                types.jsxAttribute(types.jsxIdentifier(ATTR), types.stringLiteral(`${file}:${line}`))
+            );
         },
     },
 });
