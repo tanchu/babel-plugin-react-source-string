@@ -38,6 +38,14 @@ describe(`babel-plugin-react-source-string on @babel/core ${version}`, () => {
         assert.ok(out.includes('<b data-source="src/App.jsx:1" />'));
     });
 
+    it('never tags Fragment or React.Fragment, even without options', () => {
+        assert.equal(
+            t(`const a = <Fragment><React.Fragment key="k"><b /></React.Fragment></Fragment>;`),
+            `const a = <Fragment><React.Fragment key="k"><b data-source="src/App.jsx:1" /></React.Fragment></Fragment>;`
+        );
+        assert.equal(t(`<Fragments />;`), `<Fragments data-source="src/App.jsx:1" />;`);
+    });
+
     it('keeps an existing data-source attribute', () => {
         assert.equal(t(`const a = <div data-source="x" />;`), `const a = <div data-source="x" />;`);
     });
