@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/tanchu/babel-plugin-react-source-string/compare/v2.1.0...v2.2.0) (2026-11-20)
+
+
+### Features
+
+* preferCallSite option, same as in the SWC and Vite plugins ([#13](https://github.com/tanchu/babel-plugin-react-source-string/issues/13)) ([3ac10a4](https://github.com/tanchu/babel-plugin-react-source-string/commit/3ac10a4fc8dab31fc231ef163629132f774cf673))
+
 ## [2.1.0](https://github.com/tanchu/babel-plugin-react-source-string/compare/v2.0.1...v2.1.0) (2026-11-20)
 
 
