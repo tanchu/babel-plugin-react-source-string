@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.0.1](https://github.com/tanchu/babel-plugin-react-source-string/compare/v2.0.0...v2.0.1) (2026-11-20)
+
+
+### Bug Fixes
+
+* public types independent of Babel's own types; CI builds once, then tests each Babel ([ae0f925](https://github.com/tanchu/babel-plugin-react-source-string/commit/ae0f9254844b46dbb279f22ae14e5c66ffe225fc))
+* support Babel 8 without pulling in Babel 7 ([2baa033](https://github.com/tanchu/babel-plugin-react-source-string/commit/2baa0334a1a2211d3579e9c01fe46cd873f4bb70))
+* support Babel 8 without pulling in Babel 7 ([c5209d3](https://github.com/tanchu/babel-plugin-react-source-string/commit/c5209d38ce578b8dc026231a9184c740586c2004))
+
 ## [2.0.0](https://github.com/tanchu/babel-plugin-react-source-string/compare/v1.1.4...v2.0.0) (2026-11-20)
 
 
