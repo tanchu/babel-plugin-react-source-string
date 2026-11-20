@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { describe, it } from 'node:test';
 import { transformSync, version } from '@babel/core';
-import reactSourceString, { relativePath, stripVirtualPrefix } from '../dist/index.mjs';
+import reactSourceString, { fromLibrary, relativePath, stripVirtualPrefix } from '../dist/index.mjs';
 
 const require = createRequire(import.meta.url);
 
@@ -56,6 +56,38 @@ describe(`babel-plugin-react-source-string on @babel/core ${version}`, () => {
         assert.equal(t(`<i />;`, { cwd: '/other' }), `<i data-source="/proj/src/App.jsx:1" />;`);
     });
 
+    it('with libraries, tags HTML elements and only components imported from those packages', () => {
+        const out = t(
+            [
+                `import { Button } from '@mui/material';`,
+                `import Card from '@mui/material/Card';`,
+                `import * as UI from '@mui/material';`,
+                `import { Pencil } from 'lucide-react';`,
+                `const a = <div><Button /><Card /><UI.Chip /><Pencil /><Local /><svg:rect /></div>;`,
+            ].join('\n'),
+            { libraries: ['@mui/material'] }
+        );
+        assert.ok(out.includes('<div data-source="src/App.jsx:5">'));
+        assert.ok(out.includes('<Button data-source="src/App.jsx:5" />'));
+        assert.ok(out.includes('<Card data-source="src/App.jsx:5" />'));
+        assert.ok(out.includes('<UI.Chip data-source="src/App.jsx:5" />'));
+        assert.ok(out.includes('<Pencil />'));
+        assert.ok(out.includes('<Local />'));
+        assert.ok(out.includes('<svg:rect data-source="src/App.jsx:5" />'));
+    });
+
+    it('with libraries, excluded still wins', () => {
+        const out = t(`import { Button } from '@mui/material';\nconst a = <p><Button /></p>;`, {
+            libraries: ['@mui/material'],
+            excluded: ['button', 'P'],
+        });
+        assert.ok(out.includes('<p><Button /></p>'));
+    });
+
+    it('an empty libraries list tags every component', () => {
+        assert.equal(t(`<Local />;`, { libraries: [] }), `<Local data-source="src/App.jsx:1" />;`);
+    });
+
     it('works together with @babel/preset-react', () => {
         const out = transformSync(`<div />;`, {
             filename: '/proj/a.jsx',
@@ -73,6 +105,12 @@ describe('path helpers (parity with the SWC and Vite plugins)', () => {
     it('stripVirtualPrefix', () => {
         assert.equal(stripVirtualPrefix('[project]/src/a.tsx'), 'src/a.tsx');
         assert.equal(stripVirtualPrefix('/src/a.tsx'), '/src/a.tsx');
+    });
+    it('fromLibrary', () => {
+        assert.equal(fromLibrary('@mui/material', ['@mui/material']), true);
+        assert.equal(fromLibrary('@mui/material/Button', ['@mui/material']), true);
+        assert.equal(fromLibrary('@mui/material-next', ['@mui/material']), false);
+        assert.equal(fromLibrary('@mui/icons-material', ['@mui']), true);
     });
     it('relativePath', () => {
         assert.equal(relativePath('/proj/', '/proj/src/a.tsx'), 'src/a.tsx');
