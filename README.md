@@ -57,6 +57,7 @@ to `peerDependencies` once the tests pass on it.
 | `excluded` | `string[]` | `[]`           | Component/element names to skip (case-insensitive). For `<UI.Button>` the name is `Button`. |
 | `root`     | `string`   | Babel's `cwd`  | Project root for relative paths. An empty string keeps paths absolute.      |
 | `libraries` | `string[]` | — (tag all)   | Tag only components imported from these packages or their subpaths (`@mui/material/Button` matches `@mui/material`); HTML elements are always tagged. |
+| `preferCallSite` | `boolean` | `false` | Put the attribute before spread props, so a `data-source` passed in from the parent wins: wrapper components point to where they are used. See [Call site or wrapper](#call-site-or-wrapper-prefercallsite). |
 
 ## How it works
 
@@ -91,6 +92,50 @@ when they pass extra props down to an element.
   </Dialog>
 </div>
 ```
+
+## Call site or wrapper: `preferCallSite`
+
+By default the attribute points to the JSX in your code that renders the DOM node. With wrapper components
+that is the wrapper's own file:
+
+```jsx
+// src/components/MyButton.jsx
+export function MyButton(props) {
+  return <Button variant="contained" {...props} />;   // line 2
+}
+
+// src/pages/Checkout.jsx
+<MyButton onClick={pay}>Pay</MyButton>                // line 42
+```
+
+Both elements are tagged. `<MyButton>` gets `data-source="src/pages/Checkout.jsx:42"` and passes it down through
+`{...props}`, but inside the wrapper the plugin adds its own attribute *after* the spread, so it overrides the one
+from the page. The DOM shows `src/components/MyButton.jsx:2`.
+
+With `preferCallSite: true` the plugin puts its attribute *before* spread props, so a value coming from the parent
+wins and the DOM shows `src/pages/Checkout.jsx:42`:
+
+```js
+// babel.config.js
+module.exports = {
+  plugins: [["babel-plugin-react-source-string", { preferCallSite: true }]],
+};
+```
+
+- Elements without spread props are tagged exactly as before.
+- With several wrappers that all spread their props (`Page` → `Toolbar` → `MyButton` → `Button`), the outermost call site wins.
+- A wrapper that does not pass its props on to the DOM element (picks `className`, `onClick` explicitly) keeps pointing to itself: the value from the call site never reaches the DOM.
+
+**When it helps**
+
+- **Design systems and UI kits.** A shared `<MyButton>` or `<Card>` is used hundreds of times. The default only tells you
+  "this is MyButton"; the call site tells you which screen and which line rendered *this* button.
+- **Bug reports and QA.** Copy the attribute of a broken element from DevTools and you land in the page code that
+  configures it — its props, text and handlers — instead of the shared component.
+- **AI coding agents.** Point an agent at an element on the page and it edits that usage (say, the label on the checkout
+  page) rather than changing a wrapper that the whole app depends on.
+
+Keep the default when you are working on the wrappers themselves: then you want to land in the wrapper's file.
 
 ## Migrating from 1.x
 
