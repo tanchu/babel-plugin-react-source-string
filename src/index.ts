@@ -17,6 +17,11 @@ export interface ReactSourceStringOptions {
      * HTML elements are always tagged. Not set or empty: every component is tagged.
      */
     libraries?: string[];
+    /**
+     * Put the attribute before spread props, so a `data-source` passed in from the parent wins:
+     * a wrapper like `<Button {...props} />` then points to where the wrapper is used, not to the wrapper file.
+     */
+    preferCallSite?: boolean;
 }
 
 interface PluginOptions extends BabelCoreNamespace.PluginPass {
@@ -113,9 +118,9 @@ const plugin = (api: BabelAPI): PluginObj<PluginOptions> => {
                 const line = path.node.loc?.start.line;
                 if (line === undefined) return;
 
-                path.node.attributes.push(
-                    types.jsxAttribute(types.jsxIdentifier(ATTR), types.stringLiteral(`${file}:${line}`))
-                );
+                const attribute = types.jsxAttribute(types.jsxIdentifier(ATTR), types.stringLiteral(`${file}:${line}`));
+                if (state.opts?.preferCallSite) path.node.attributes.unshift(attribute);
+                else path.node.attributes.push(attribute);
             },
         },
     };

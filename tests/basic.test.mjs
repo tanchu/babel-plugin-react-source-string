@@ -88,6 +88,21 @@ describe(`babel-plugin-react-source-string on @babel/core ${version}`, () => {
         assert.equal(t(`<Local />;`, { libraries: [] }), `<Local data-source="src/App.jsx:1" />;`);
     });
 
+    it('by default the attribute goes after spread props (the wrapper file wins)', () => {
+        assert.equal(
+            t(`const B = (props) => <Button variant="x" {...props} />;`),
+            `const B = props => <Button variant="x" {...props} data-source="src/App.jsx:1" />;`
+        );
+    });
+
+    it('preferCallSite puts the attribute first, so a data-source from the call site wins', () => {
+        assert.equal(
+            t(`const B = (props) => <Button variant="x" {...props} />;`, { preferCallSite: true }),
+            `const B = props => <Button data-source="src/App.jsx:1" variant="x" {...props} />;`
+        );
+        assert.equal(t(`<i />;`, { preferCallSite: true }), `<i data-source="src/App.jsx:1" />;`);
+    });
+
     it('works together with @babel/preset-react', () => {
         const out = transformSync(`<div />;`, {
             filename: '/proj/a.jsx',
