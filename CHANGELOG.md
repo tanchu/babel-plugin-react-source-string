@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.1](https://github.com/tanchu/babel-plugin-react-source-string/compare/v2.2.0...v2.2.1) (2026-11-20)
+
+
+### Bug Fixes
+
+* never tag Fragment and React.Fragment ([#15](https://github.com/tanchu/babel-plugin-react-source-string/issues/15)) ([a42803d](https://github.com/tanchu/babel-plugin-react-source-string/commit/a42803da42c43838e9f87dfb2f9b20ee688ae44a))
+
 ## [2.2.0](https://github.com/tanchu/babel-plugin-react-source-string/compare/v2.1.0...v2.2.0) (2026-11-20)
 
 
