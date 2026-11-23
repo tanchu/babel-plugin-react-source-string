@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0](https://github.com/tanchu/babel-plugin-react-source-string/compare/v2.2.1...v2.3.0) (2026-11-23)
+
+
+### Features
+
+* overlay option for AI agents — Alt+click copies path:line, window.__REACT_SOURCE__ ([#17](https://github.com/tanchu/babel-plugin-react-source-string/issues/17)) ([7f36a71](https://github.com/tanchu/babel-plugin-react-source-string/commit/7f36a711ce1861e91f0369f686bc1e3eabc3280c))
+
 ## [2.2.1](https://github.com/tanchu/babel-plugin-react-source-string/compare/v2.2.0...v2.2.1) (2026-11-20)
 
 
