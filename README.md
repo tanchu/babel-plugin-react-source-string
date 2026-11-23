@@ -172,6 +172,7 @@ Claude in Chrome and similar tools) get one call:
 
 ```js
 __REACT_SOURCE__.find("Pay");          // [{ source: "src/pages/Checkout.jsx:42", tag: "button", text: "Pay" }]
+__REACT_SOURCE__.find("Close");        // icon buttons and images too: matches aria-label, alt and title
 __REACT_SOURCE__.of("form button");    // "src/pages/Checkout.jsx:42" (an element or a CSS selector)
 __REACT_SOURCE__.stack(element);       // ["src/pages/Checkout.jsx:42", "src/pages/Checkout.jsx:30", "src/App.jsx:12"]
 __REACT_SOURCE__.describe(element);    // the text Alt + click copies
@@ -181,7 +182,7 @@ Add a rule so the agent knows about it (`CLAUDE.md`, `AGENTS.md`, `.cursor/rules
 
 ```md
 The dev build tags every JSX element with `data-source="path:line"`.
-To find the code behind something on the page, run `__REACT_SOURCE__.find("<visible text>")`
+To find the code behind something on the page, run `__REACT_SOURCE__.find("<visible text or label>")`
 in the browser (or read the element's `data-source`) and open that file at that line
 instead of searching the repository.
 ```
