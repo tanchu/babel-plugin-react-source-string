@@ -9,10 +9,22 @@
     "plugin",
     "react",
     "source",
-    "data-source"
+    "data-source",
+    "jsx",
+    "debug",
+    "devtools",
+    "click-to-source",
+    "ai",
+    "ai-agent",
+    "llm",
+    "cursor",
+    "claude-code",
+    "react-19",
+    "_debugSource"
   ],
   "files": [
-    "dist"
+    "dist",
+    "overlay.js"
   ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -22,7 +34,8 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
-    }
+    },
+    "./overlay.js": "./overlay.js"
   },
   "scripts": {
     "dev": "unbuild --stub",

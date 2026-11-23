@@ -58,6 +58,7 @@ to `peerDependencies` once the tests pass on it.
 | `root`     | `string`   | Babel's `cwd`  | Project root for relative paths. An empty string keeps paths absolute.      |
 | `libraries` | `string[]` | — (tag all)   | Tag only components imported from these packages or their subpaths (`@mui/material/Button` matches `@mui/material`); HTML elements are always tagged. |
 | `preferCallSite` | `boolean` | `false` | Put the attribute before spread props, so a `data-source` passed in from the parent wins: wrapper components point to where they are used. See [Call site or wrapper](#call-site-or-wrapper-prefercallsite). |
+| `overlay` | `boolean` | `false` | Import a small dev overlay: Alt (Option) + click on an element copies its `path:line` for a prompt, and `window.__REACT_SOURCE__` lets browser agents look sources up. Development only. See [For AI coding agents](#for-ai-coding-agents). |
 
 ## How it works
 
@@ -136,6 +137,57 @@ module.exports = {
   page) rather than changing a wrapper that the whole app depends on.
 
 Keep the default when you are working on the wrappers themselves: then you want to land in the wrapper's file.
+
+## For AI coding agents
+
+The attribute is in the DOM, but most browser agents never see it: Playwright MCP snapshots and the
+page readers of agent browsers show the accessibility tree (`button "Pay"`), and `data-*` attributes are
+not part of it. Turn on the overlay in development to get the source to the agent:
+
+```js
+// babel.config.js
+module.exports = (api) => ({
+  plugins: [
+    ...(api.env("development")
+      ? [["babel-plugin-react-source-string", { overlay: true, preferCallSite: true }]]
+      : []),
+  ],
+});
+```
+
+The plugin adds `import "babel-plugin-react-source-string/overlay.js"` to every file it tags; the bundler
+loads that module once. It does nothing on the server, outside a browser or when `NODE_ENV` is `production`,
+but its code (about 5 KB) still ends up in the bundle, so turn it on in development only, as above.
+
+**You point at it.** Hold Alt (Option on macOS): the element under the cursor is outlined with its
+`path:line`. Alt + click copies a reference you can paste into the prompt, without triggering the element:
+
+```text
+src/pages/Checkout.jsx:42 <button> "Pay"
+inside: src/pages/Checkout.jsx:30 ← src/App.jsx:12
+```
+
+**The agent looks it up.** Agents that can run JavaScript in the page (Playwright MCP `browser_evaluate`,
+Claude in Chrome and similar tools) get one call:
+
+```js
+__REACT_SOURCE__.find("Pay");          // [{ source: "src/pages/Checkout.jsx:42", tag: "button", text: "Pay" }]
+__REACT_SOURCE__.of("form button");    // "src/pages/Checkout.jsx:42" (an element or a CSS selector)
+__REACT_SOURCE__.stack(element);       // ["src/pages/Checkout.jsx:42", "src/pages/Checkout.jsx:30", "src/App.jsx:12"]
+__REACT_SOURCE__.describe(element);    // the text Alt + click copies
+```
+
+Add a rule so the agent knows about it (`CLAUDE.md`, `AGENTS.md`, `.cursor/rules`):
+
+```md
+The dev build tags every JSX element with `data-source="path:line"`.
+To find the code behind something on the page, run `__REACT_SOURCE__.find("<visible text>")`
+in the browser (or read the element's `data-source`) and open that file at that line
+instead of searching the repository.
+```
+
+With wrapper components (a shared `<MyButton>`), turn on [`preferCallSite`](#call-site-or-wrapper-prefercallsite)
+so the reference points to the page that uses the wrapper.
 
 ## Migrating from 1.x
 
