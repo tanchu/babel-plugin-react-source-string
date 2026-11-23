@@ -156,7 +156,8 @@ module.exports = (api) => ({
 ```
 
 The plugin adds `import "babel-plugin-react-source-string/overlay.js"` to every file it tags; the bundler
-loads that module once. It does nothing on the server, outside a browser or when `NODE_ENV` is `production`.
+loads that module once. It does nothing on the server, outside a browser or when `NODE_ENV` is `production`,
+but its code (about 5 KB) still ends up in the bundle, so turn it on in development only, as above.
 
 **You point at it.** Hold Alt (Option on macOS): the element under the cursor is outlined with its
 `path:line`. Alt + click copies a reference you can paste into the prompt, without triggering the element:
