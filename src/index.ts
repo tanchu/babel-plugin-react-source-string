@@ -22,14 +22,23 @@ export interface ReactSourceStringOptions {
      * a wrapper like `<Button {...props} />` then points to where the wrapper is used, not to the wrapper file.
      */
     preferCallSite?: boolean;
+    /**
+     * Import the dev overlay into every file that got a `data-source`: Alt (Option) + hover shows the element's
+     * `path:line`, Alt + click copies it for a prompt, `window.__REACT_SOURCE__` lets browser agents look sources up.
+     * The bundler loads it once. Turn it on in development only.
+     */
+    overlay?: boolean;
 }
 
 interface PluginOptions extends BabelCoreNamespace.PluginPass {
     opts: ReactSourceStringOptions;
     libraryImports?: Set<string>;
+    tagged?: boolean;
 }
 
 const ATTR = 'data-source';
+/** A plain script (no imports or exports), so it loads the same as ESM or CommonJS. */
+export const OVERLAY_MODULE = 'babel-plugin-react-source-string/overlay.js';
 
 /** Turbopack-style ids look like `[project]/src/a.tsx`. Same as the SWC and Vite plugins. */
 export function stripVirtualPrefix(filename: string): string {
@@ -92,16 +101,23 @@ const plugin = (api: BabelAPI): PluginObj<PluginOptions> => {
     return {
         name: 'babel-plugin-react-source-string',
         visitor: {
-            Program(path, state) {
-                const libraries = Array.isArray(state.opts?.libraries) ? state.opts.libraries : [];
-                if (libraries.length === 0) return;
+            Program: {
+                enter(path, state) {
+                    const libraries = Array.isArray(state.opts?.libraries) ? state.opts.libraries : [];
+                    if (libraries.length === 0) return;
 
-                const imports = new Set<string>();
-                for (const statement of path.node.body) {
-                    if (statement.type !== 'ImportDeclaration' || !fromLibrary(statement.source.value, libraries)) continue;
-                    for (const specifier of statement.specifiers) imports.add(specifier.local.name);
-                }
-                state.libraryImports = imports;
+                    const imports = new Set<string>();
+                    for (const statement of path.node.body) {
+                        if (statement.type !== 'ImportDeclaration' || !fromLibrary(statement.source.value, libraries)) continue;
+                        for (const specifier of statement.specifiers) imports.add(specifier.local.name);
+                    }
+                    state.libraryImports = imports;
+                },
+                exit(path, state) {
+                    // Only ES modules can import; directives like "use client" stay first (they live in `directives`).
+                    if (!state.opts?.overlay || !state.tagged || path.node.sourceType !== 'module') return;
+                    path.unshiftContainer('body', types.importDeclaration([], types.stringLiteral(OVERLAY_MODULE)));
+                },
             },
             JSXOpeningElement(path, state) {
                 if (!state.filename) return;
@@ -128,6 +144,7 @@ const plugin = (api: BabelAPI): PluginObj<PluginOptions> => {
                 const attribute = types.jsxAttribute(types.jsxIdentifier(ATTR), types.stringLiteral(`${file}:${line}`));
                 if (state.opts?.preferCallSite) path.node.attributes.unshift(attribute);
                 else path.node.attributes.push(attribute);
+                state.tagged = true;
             },
         },
     };

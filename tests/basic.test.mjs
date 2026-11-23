@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { describe, it } from 'node:test';
 import { transformSync, version } from '@babel/core';
-import reactSourceString, { fromLibrary, relativePath, stripVirtualPrefix } from '../dist/index.mjs';
+import reactSourceString, { OVERLAY_MODULE, fromLibrary, relativePath, stripVirtualPrefix } from '../dist/index.mjs';
 
 const require = createRequire(import.meta.url);
 
@@ -109,6 +110,23 @@ describe(`babel-plugin-react-source-string on @babel/core ${version}`, () => {
             `const B = props => <Button data-source="src/App.jsx:1" variant="x" {...props} />;`
         );
         assert.equal(t(`<i />;`, { preferCallSite: true }), `<i data-source="src/App.jsx:1" />;`);
+    });
+
+    it('overlay imports the dev overlay once, only into files with tagged elements', () => {
+        const out = t(`'use client';\nexport const A = () => <div><b /></div>;`, { overlay: true });
+        assert.equal(out.split(OVERLAY_MODULE).length - 1, 1);
+        assert.ok(out.startsWith(`'use client';\n\nimport "${OVERLAY_MODULE}";`) || out.startsWith(`'use client';\n\nimport '${OVERLAY_MODULE}';`), out);
+        assert.ok(!t(`export const a = 1;`, { overlay: true }).includes(OVERLAY_MODULE));
+        assert.ok(!t(`const a = <Slot />;`, { overlay: true, excluded: ['Slot'] }).includes(OVERLAY_MODULE));
+        assert.ok(!t(`const a = <div />;`).includes(OVERLAY_MODULE));
+    });
+
+    it('the overlay module is a plain script that resolves through the package exports', () => {
+        const file = require.resolve(OVERLAY_MODULE);
+        assert.match(file, /overlay\.js$/);
+        const code = readFileSync(file, 'utf8');
+        assert.ok(!/^\s*(import|export)\s/m.test(code));
+        assert.doesNotThrow(() => new Function(code)()); // no window: does nothing
     });
 
     it('works together with @babel/preset-react', () => {
