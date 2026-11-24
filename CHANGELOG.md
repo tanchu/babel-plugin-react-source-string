@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.1](https://github.com/tanchu/babel-plugin-react-source-string/compare/v2.3.0...v2.3.1) (2026-11-24)
+
+
+### Bug Fixes
+
+* **overlay:** name images and icon buttons by alt and aria-label ([#19](https://github.com/tanchu/babel-plugin-react-source-string/issues/19)) ([9519f53](https://github.com/tanchu/babel-plugin-react-source-string/commit/9519f53cc0ac51cc78b1d85427d6a34beb300848))
+
 ## [2.3.0](https://github.com/tanchu/babel-plugin-react-source-string/compare/v2.2.1...v2.3.0) (2026-11-23)
 
 

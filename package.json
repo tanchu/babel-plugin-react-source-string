@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-react-source-string",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Babel plugin that adds data-source=\"path:line\" attributes to JSX elements (React components and HTML elements) for debugging",
   "author": "Jaroslav Barov jaroslav.barov@gmail.com",
   "license": "MIT",
