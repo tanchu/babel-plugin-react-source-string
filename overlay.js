@@ -9,8 +9,10 @@
   const selector = `[${attr}]`;
   const resolve = (target) => typeof target === "string" ? document.querySelector(target) : target;
   const tagged = (target) => resolve(target)?.closest(selector) ?? null;
+  const clean = (text) => (text ?? "").replace(/\s+/g, " ").trim();
+  const labelOf = (el) => clean(el.getAttribute("aria-label") || el.getAttribute("alt") || el.getAttribute("title"));
   const textOf = (el) => {
-    const text = (el.innerText ?? el.textContent ?? "").replace(/\s+/g, " ").trim();
+    const text = clean(el.getAttribute("aria-label")) || clean(el.innerText ?? el.textContent) || labelOf(el) || [...el.querySelectorAll("[aria-label],[alt],[title]")].map(labelOf).find(Boolean) || "";
     return text.length > 60 ? `${text.slice(0, 57)}...` : text;
   };
   const stack = (target) => {
