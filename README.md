@@ -187,6 +187,15 @@ in the browser (or read the element's `data-source`) and open that file at that 
 instead of searching the repository.
 ```
 
+Or install the agent skill. Besides the lookup, it covers setting the plugins up and choosing between a wrapper and its call site:
+
+```bash
+npx skills add tanchu/react-source-skills
+```
+
+In Claude Code it is also a plugin: `/plugin marketplace add tanchu/react-source-skills`, then
+`/plugin install react-source-string@react-source-skills`. See [tanchu/react-source-skills](https://github.com/tanchu/react-source-skills).
+
 With wrapper components (a shared `<MyButton>`), turn on [`preferCallSite`](#call-site-or-wrapper-prefercallsite)
 so the reference points to the page that uses the wrapper.
 
